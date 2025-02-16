@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="annotation-desktop">
+    <output-path>$PROJECT_DIR$/annotation/build/libs</output-path>
+    <root id="archive" name="annotation-desktop.jar">
+      <element id="module-output" name="MockEngine.annotation.desktopMain" />
+    </root>
+  </artifact>
+</component>
