@@ -66,15 +66,15 @@ class MockEngineGradlePlugin : Plugin<Project> {
                             dependencies.add("kspCommonMainMetadata", dependency)
                             return@configureEach
                         }
-                        val capitalizedTargetName = target.targetName.replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase(Locale.getDefault())
-                            else it.toString()
-                        }
-                        dependencies.add("ksp$capitalizedTargetName", dependency)
-
-                        if (target.compilations.any { it.name == "test" }) {
-                            dependencies.add("ksp${capitalizedTargetName}Test", dependency)
-                        }
+//                        val capitalizedTargetName = target.targetName.replaceFirstChar {
+//                            if (it.isLowerCase()) it.titlecase(Locale.getDefault())
+//                            else it.toString()
+//                        }
+//                        dependencies.add("ksp$capitalizedTargetName", dependency)
+//
+//                        if (target.compilations.any { it.name == "test" }) {
+//                            dependencies.add("ksp${capitalizedTargetName}Test", dependency)
+//                        }
                     }
 
                     kotlinExtension.sourceSets

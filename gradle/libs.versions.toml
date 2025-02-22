@@ -25,7 +25,7 @@ jetbrains-kover = "0.9.1"
 jetbrains-serialization = "1.7.3"
 
 ## AndroidX
-androidx-room = "2.7.0-alpha12"
+androidx-room = "2.7.0-beta01"
 
 ## AndroidX Compose
 androidx-compose-activity = "1.10.0"

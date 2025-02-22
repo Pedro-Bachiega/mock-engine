@@ -1,13 +1,13 @@
 @file:Suppress("UnstableApiUsage")
 
 pluginManagement {
-    apply(from = "$rootDir/repositories.gradle.kts")
+    apply(from = "$rootDir/kmp-build-plugin/repositories.gradle.kts")
     val repositoryList: RepositoryHandler.() -> Unit by extra
     repositories(repositoryList)
 }
 
 dependencyResolutionManagement {
-    apply(from = "$rootDir/repositories.gradle.kts")
+    apply(from = "$rootDir/kmp-build-plugin/repositories.gradle.kts")
     val repositoryList: RepositoryHandler.() -> Unit by extra
     repositories(repositoryList)
 
@@ -16,7 +16,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "MockEngine"
 
-includeBuild("build-plugin")
+includeBuild("kmp-build-plugin")
 
 include(
 //    ":sample",

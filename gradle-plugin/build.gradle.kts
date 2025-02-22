@@ -1,4 +1,4 @@
-import com.mockengine.plugin.util.runGitCommand
+import com.toolkit.plugin.util.runGitCommand
 
 plugins {
     id("java-gradle-plugin")
