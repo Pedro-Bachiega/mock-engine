@@ -31,7 +31,7 @@ private val mockConfigurationPerRequest = mutableMapOf<String, RequestData>()
 @MockEngineApi
 fun addMockConfiguration(path: String, requestData: RequestData) {
     if (requestData.filePaths.isEmpty()) {
-        println("Skipping request data for $path. Reason: No file paths provided")
+        println("[MockEngine] Skipping request data for $path. Reason: No file paths provided")
         return
     }
 
@@ -54,7 +54,7 @@ class MockEngine internal constructor(override val config: Config) :
     )
 
     init {
-        check(config.baseUrl.isNotEmpty()) { "No base url provided in [MockEngine.Config]" }
+        check(config.baseUrl.isNotEmpty()) { "[MockEngine] No base url provided in [MockEngine.Config]" }
     }
 
     @OptIn(InternalAPI::class, MockEngineInternalApi::class)
@@ -83,8 +83,13 @@ class MockEngine internal constructor(override val config: Config) :
                 }
             }
 
-            MockState.chosenMockOption?.deserialize(callContext, requestData.serializer, json)
-                ?: error("[MockEngine] No option selected")
+            val response = MockState.chosenMockOption
+                ?.deserialize(callContext, requestData.serializer, json)
+
+            MockState.currentMockDataList = null
+            MockState.chosenMockOption = null
+
+            response ?: error("[MockEngine] No option selected")
         }
     }
 
