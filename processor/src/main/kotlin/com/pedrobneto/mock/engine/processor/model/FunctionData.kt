@@ -26,7 +26,7 @@ internal class FunctionData(
             val mockAnnotation = declaration.getAnnotationsByType(Mock::class).firstOrNull()
             if (mockAnnotation == null || requestPath == null) return null
 
-            val files = mockAnnotation.files.split(",").map { it.trim() }
+            val files = mockAnnotation.files.split(",").map(String::trim)
             if (files.isEmpty()) {
                 logger.error("No files found in mock annotation in $functionName")
                 return null

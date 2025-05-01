@@ -2,7 +2,6 @@ package com.pedrobneto.mock.engine.client
 
 import com.pedrobneto.mock.engine.client.model.MockData
 import com.pedrobneto.mock.engine.client.model.MockEngineApi
-import com.pedrobneto.mock.engine.client.model.MockEngineInternalApi
 import com.pedrobneto.mock.engine.client.model.RequestData
 import com.pedrobneto.mock.engine.client.view.MockState
 import io.ktor.client.HttpClientConfig
@@ -24,10 +23,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-@MockEngineInternalApi
 private val mockConfigurationPerRequest = mutableMapOf<String, RequestData>()
 
-@OptIn(MockEngineInternalApi::class)
+fun HttpClientConfig<*>.onMockEngine(block: MockEngine.Config.() -> Unit) = engine {
+    if (this is MockEngine.Config) block.invoke(this)
+}
+
 @MockEngineApi
 fun addMockConfiguration(path: String, requestData: RequestData) {
     if (requestData.filePaths.isEmpty()) {
@@ -57,7 +58,7 @@ class MockEngine internal constructor(override val config: Config) :
         check(config.baseUrl.isNotEmpty()) { "[MockEngine] No base url provided in [MockEngine.Config]" }
     }
 
-    @OptIn(InternalAPI::class, MockEngineInternalApi::class)
+    @OptIn(InternalAPI::class)
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val json = config.onProvideJson.invoke()
         val callContext = callContext()
@@ -66,8 +67,7 @@ class MockEngine internal constructor(override val config: Config) :
             val requestPath = data.url.toString().removePrefix(config.baseUrl)
             println("[MockEngine] Processing request for path: $requestPath")
 
-            val requestData = mockConfigurationPerRequest[requestPath]
-                ?: error("[MockEngine] No request data for path: $requestPath")
+            val requestData = getRequestFiles(requestPath)
             val mockDataList = requestData.getMockDataList(json)
                 .ifEmpty { error("[MockEngine] No files found for path: $requestPath") }
 
@@ -98,17 +98,24 @@ class MockEngine internal constructor(override val config: Config) :
         coroutineContext[Job]?.invokeOnCompletion { contextState.complete() }
     }
 
+    private fun getRequestFiles(requestPath: String): RequestData =
+        mockConfigurationPerRequest.firstNotNullOfOrNull { (originalPath, files) ->
+            files.takeIf {
+                requestPath.matches(
+                    originalPath.replace("/\\{.+\\}/".toRegex(), "/[^/]+/").toRegex()
+                )
+            }
+        } ?: error("[MockEngine] No request data for path: $requestPath")
+
     class Config internal constructor(
         var baseUrl: String = "",
-        var onProvideJson: () -> Json = { error("[MockEngine.Config] Couldn't retrieve Json instance") }
+        var onProvideJson: () -> Json = {
+            error("[MockEngine.Config] Couldn't retrieve Json instance")
+        }
     ) : HttpClientEngineConfig()
 
     companion object : HttpClientEngineFactory<Config> {
         override fun create(block: Config.() -> Unit): HttpClientEngine =
             MockEngine(Config().apply(block))
     }
-}
-
-fun HttpClientConfig<*>.onMockEngine(block: MockEngine.Config.() -> Unit) = engine {
-    if (this is MockEngine.Config) block.invoke(this)
 }

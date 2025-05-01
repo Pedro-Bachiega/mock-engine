@@ -1,8 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="annotation-jvm">
     <output-path>$PROJECT_DIR$/annotation/build/libs</output-path>
-    <root id="archive" name="annotation-jvm.jar">
-      <element id="module-output" name="MockEngine.annotation.jvmMain" />
-    </root>
+    <root id="archive" name="annotation-jvm.jar" />
   </artifact>
 </component>
