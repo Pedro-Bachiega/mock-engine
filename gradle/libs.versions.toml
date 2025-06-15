@@ -68,7 +68,6 @@ plugin-lint-detekt = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gra
 plugin-lint-ktlint = { group = "org.jlleitschuh.gradle.ktlint-idea", name = "org.jlleitschuh.gradle.ktlint-idea.gradle.plugin", version.ref = "ktlint" }
 
 ## Tools
-plugin-gradle-publish = { group = "com.gradle.plugin-publish", name = "com.gradle.plugin-publish.gradle.plugin", version.ref = "gradle-publish" }
 plugin-vanniktech-publish = { group = "com.vanniktech.maven.publish", name = "com.vanniktech.maven.publish.gradle.plugin", version.ref = "vanniktech-publish" }
 
 # ------------------------------------------------------------------------------------------------ #
