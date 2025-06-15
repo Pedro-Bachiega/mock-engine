@@ -24,11 +24,6 @@ class MockEngineGradlePlugin : Plugin<Project> {
                  * to not work with multiplatform projects with only one target.
                  * https://github.com/google/ksp/issues/1525
                  */
-                /**
-                 * This is currently a workaround for a bug in KSP that causes the plugin
-                 * to not work with multiplatform projects with only one target.
-                 * https://github.com/google/ksp/issues/1525
-                 */
                 val singleTarget =
                     project.kotlinExtension.targets
                         .toList()

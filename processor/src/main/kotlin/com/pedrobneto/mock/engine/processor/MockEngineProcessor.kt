@@ -10,8 +10,8 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.pedrobneto.mock.engine.annotation.Mock
 import com.pedrobneto.mock.engine.processor.model.FunctionData
 
-internal const val MOCK_ENGINE_PACKAGE = "com.pedrobneto.mock.engine.client"
-internal const val MOCK_ENGINE_DATA_FILE_NAME = "MockEngineData"
+private const val MOCK_ENGINE_PACKAGE = "com.pedrobneto.mock.engine.client"
+private const val MOCK_ENGINE_DATA_FILE_NAME = "MockEngineData"
 
 class MockEngineProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
@@ -44,5 +44,42 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
         ).use { it.write(mockDataTemplate(mocks = functionList).toByteArray()) }
 
         return emptyList()
+    }
+
+    private fun mockDataTemplate(mocks: List<FunctionData>): String {
+        val mockedDataEntries = mocks.joinToString(separator = "\n") { functionData ->
+            val (typeName, typeParameters) = functionData.returnType
+            val serializer = if (typeParameters.isEmpty()) {
+                "serializer<$typeName>()"
+            } else {
+                "serializer<$typeName<${typeParameters.joinToString(", ")}>>()"
+            }
+
+            """"${functionData.requestPath}" to RequestData(
+                    $serializer,
+                    listOf(
+                        "${functionData.filePaths.joinToString(",\n") { "/$it" }}"
+                    )
+                ),
+        """
+        }
+
+        return """
+package $MOCK_ENGINE_PACKAGE
+
+import com.pedrobneto.mock.engine.client.model.RequestData
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
+
+object $MOCK_ENGINE_DATA_FILE_NAME {
+    fun loadMocks() {
+        addMockConfigurations(
+            mapOf(
+                $mockedDataEntries
+            )
+        )
+    }
+}
+    """.trimIndent()
     }
 }
