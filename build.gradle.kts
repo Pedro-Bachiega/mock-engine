@@ -12,5 +12,5 @@ plugins {
     alias(libs.plugins.lint.detekt) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.jetbrains.kotlin.multiplatform) apply false
-    id("com.vanniktech.maven.publish") version "0.30.0" apply false
+    alias(libs.plugins.vanniktech.publish) apply false
 }
