@@ -32,7 +32,7 @@ androidx-compose-activity = "1.10.0"
 androidx-compose-core = "1.7.6"
 
 ## Google
-google-ksp = "2.1.10-1.0.30"
+google-ksp = "2.1.21-2.0.1"
 
 ## Ktor
 ktor = "3.0.3"
