@@ -23,7 +23,7 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
 
     private var invoked = false
 
-    override fun process(resolver: Resolver): List<KSAnnotated> {
+    override fun process(resolver: Resolver): List<KSAnnotated> = runCatching {
         if (invoked) return emptyList()
         invoked = true
 
@@ -44,7 +44,7 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
         ).use { it.write(mockDataTemplate(mocks = functionList).toByteArray()) }
 
         return emptyList()
-    }
+    }.getOrDefault(emptyList())
 
     private fun mockDataTemplate(mocks: List<FunctionData>): String {
         val mockedDataEntries = mocks.joinToString(separator = "\n") { functionData ->

@@ -8,8 +8,6 @@ android.namespace = "com.pedrobneto.mock.engine.client"
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        api(project(":annotation"))
-
         implementation(libs.jetbrains.serialization)
         implementation(libs.ktor.client.core)
 
