@@ -25,5 +25,5 @@ include(
     ":client",
     ":processor",
 
-    ":gradle-plugin",
+    ":mock-engine-gradle-plugin",
 )

@@ -1,10 +1,10 @@
 # ------------------------------------------------------------------------------------------------ #
 [versions]
 ## --- Plugins and more general stuff --- ##
-android-plugin = "8.8.2"
+android-plugin = "8.12.0"
 jacoco = "0.8.9"
 dexcount = "4.0.0"
-detekt = "1.23.7"
+detekt = "1.23.8"
 ktlint = "11.6.1"
 
 ## --- Build Config and SDK --- ##
@@ -17,12 +17,12 @@ build-sdk-target = "35"
 build-tools = "35.0.0"
 
 ## JetBrains
-jetbrains-compose = "1.8.1"
+jetbrains-compose = "1.8.2"
 jetbrains-dokka = "2.0.0"
-jetbrains-kotlin = "2.1.21"
-jetbrains-kotlin-gradle-dsl = "6.1.2"
+jetbrains-kotlin = "2.2.10"
+jetbrains-kotlin-gradle-dsl = "6.2.0"
 jetbrains-kover = "0.9.1"
-jetbrains-serialization = "1.8.1"
+jetbrains-serialization = "1.9.0"
 
 ## AndroidX
 androidx-room = "2.7.1"
@@ -32,10 +32,10 @@ androidx-compose-activity = "1.10.0"
 androidx-compose-core = "1.7.6"
 
 ## Google
-google-ksp = "2.1.21-2.0.1"
+google-ksp = "2.2.10-2.0.2"
 
 ## Ktor
-ktor = "3.2.0"
+ktor = "3.2.3"
 
 ## Gradle
 gradle-publish = "1.3.1"

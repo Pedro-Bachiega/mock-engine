@@ -7,7 +7,7 @@ android {
     namespace = "com.pedrbneto.mock.engine.android.app"
 
     defaultConfig {
-        applicationId = "com.luli.mock.engine.android"
+        applicationId = "com.pedrobneto.mock.engine.android"
     }
 
     signingConfigs {
