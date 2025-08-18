@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 }
 
-rootProject.name = "MockEngine"
+rootProject.name = "mock-engine"
 
 includeBuild("kmp-build-plugin")
 
