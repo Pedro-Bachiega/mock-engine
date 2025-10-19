@@ -4,3 +4,9 @@ plugins {
 }
 
 android.namespace = "com.pedrobneto.mock.engine.annotation"
+
+kotlin {
+    androidTarget()
+    jvm()
+    js { browser() }
+}

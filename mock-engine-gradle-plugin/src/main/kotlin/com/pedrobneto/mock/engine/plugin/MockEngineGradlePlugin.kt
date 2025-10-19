@@ -2,12 +2,14 @@ package com.pedrobneto.mock.engine.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import kotlin.reflect.full.declaredMemberProperties
 
 class MockEngineGradlePlugin : Plugin<Project> {
 
@@ -35,19 +37,28 @@ class MockEngineGradlePlugin : Plugin<Project> {
                     .toList()
                     .size == 2
 
-                val isMultiplatform = kotlinExtension is KotlinMultiplatformExtension
-                when {
-                    isMultiplatform && singleTarget -> {
+                if (kotlinExtension is KotlinMultiplatformExtension) {
+                    if (singleTarget) {
                         argMethod.invoke(
                             kspExtension,
                             "MockEngine_MultiplatformWithSingleTarget",
-                            "true"
+                            true.toString()
                         )
-                    }
+                    } else {
+                        val useKsp2 = kspExtension.javaClass.kotlin.declaredMemberProperties.find {
+                            it.name == "useKsp2"
+                        }?.call(kspExtension)?.let {
+                            (it as? Property<*>?)?.get() as Boolean?
+                        }
+                            ?: project.findProperty("ksp.useKSP2")?.toString()?.toBoolean()
+                            ?: false
 
-                    isMultiplatform -> {
-                        tasks.withType(KotlinCompilationTask::class.java).configureEach { task ->
-                            if (name.matches(Regex("(assemble|build).+"))) {
+                        if (useKsp2) {
+                            tasks.named { name -> name.startsWith("ksp") }
+                        } else {
+                            tasks.withType(KotlinCompilationTask::class.java)
+                        }.configureEach { task ->
+                            if (task.name != "kspCommonMainKotlinMetadata") {
                                 task.dependsOn("kspCommonMainKotlinMetadata")
                             }
                         }
@@ -55,14 +66,16 @@ class MockEngineGradlePlugin : Plugin<Project> {
                 }
             }
 
-            val dependency = "io.github.pedro-bachiega:mock-engine-processor:0.0.1"
+            val dependency = "io.github.pedro-bachiega:mock-engine-processor:0.0.1-alpha02"
             when (val kotlinExtension = kotlinExtension) {
                 is KotlinSingleTargetExtension<*> -> {
                     dependencies.add("ksp", dependency)
                 }
 
                 is KotlinMultiplatformExtension -> {
-                    dependencies.add("kspCommonMainMetadata", dependency)
+                    kotlinExtension.targets.configureEach { target ->
+                        dependencies.add("kspCommonMainMetadata", dependency)
+                    }
 
                     kotlinExtension.sourceSets
                         .named("commonMain")
