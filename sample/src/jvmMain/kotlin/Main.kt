@@ -1,5 +1,7 @@
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import br.com.arch.toolkit.lumber.DebugTree
+import br.com.arch.toolkit.lumber.Lumber
 import com.pedrobneto.mockengine.network.KtorfitProvider
 import com.pedrobneto.mockengine.network.SampleRepository
 import com.pedrobneto.mockengine.network.createSampleApi
@@ -14,6 +16,8 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 fun main() = application {
+    Lumber.plant(DebugTree())
+
     startKoin {
         printLogger()
         modules(

@@ -3,7 +3,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     id("plugin-desktop-application")
     alias(libs.plugins.google.ksp)
-    alias(libs.plugins.mock.engine.gradle.plugin)
+    alias(libs.plugins.jetbrains.serialization)
     alias(libs.plugins.ktorfit)
 }
 
@@ -22,6 +22,7 @@ kotlin {
 
             implementation(libs.toolkit.arch.event.observer.core)
             implementation(libs.toolkit.arch.event.observer.compose)
+            implementation(libs.toolkit.arch.lumber)
             implementation(libs.toolkit.arch.splinter)
 
             implementation(libs.jetbrains.compose.navigation)
@@ -45,6 +46,10 @@ kotlin {
             implementation(project(":client"))
         }
     }
+}
+
+dependencies {
+    kspJvm(project(":processor"))
 }
 
 compose.desktop {

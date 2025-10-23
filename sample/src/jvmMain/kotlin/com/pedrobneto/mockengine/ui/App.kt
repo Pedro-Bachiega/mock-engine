@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import br.com.arch.toolkit.compose.collectAsComposableState
+import br.com.arch.toolkit.lumber.Lumber
 import br.com.arch.toolkit.result.EventDataStatus
+import com.pedrobneto.mock.engine.client.view.DefaultMockEngineChoiceView
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -25,7 +27,7 @@ import org.koin.compose.viewmodel.koinViewModel
 internal fun App(viewModel: SampleViewModel = koinViewModel()) {
     MaterialTheme {
         val scope = rememberCoroutineScope()
-        var customPath by remember { mutableStateOf("") }
+        var customPath by remember { mutableStateOf("sample") }
 
         val sampleModel by viewModel.sampleFlow.collectAsComposableState()
 
@@ -39,6 +41,7 @@ internal fun App(viewModel: SampleViewModel = koinViewModel()) {
                     Text(text = "Loading...")
                 }
                 OnError { throwable ->
+                    Lumber.tag("[App]").error(throwable)
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Error")
                         Text(text = throwable.message ?: "Unknown error")
@@ -63,5 +66,7 @@ internal fun App(viewModel: SampleViewModel = koinViewModel()) {
                 content = { Text(text = "Fetch") }
             )
         }
+
+        DefaultMockEngineChoiceView()
     }
 }

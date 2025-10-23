@@ -1,0 +1,12 @@
+[
+  {
+    "description": "Sample response - 1",
+    "status_code": 200,
+    "response_file": "mock/sample-response-1.json"
+  },
+  {
+    "description": "Sample response - 2",
+    "status_code": 200,
+    "response_file": "mock/sample-response-2.json"
+  }
+]

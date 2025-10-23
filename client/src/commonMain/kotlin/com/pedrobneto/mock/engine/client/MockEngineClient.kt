@@ -5,11 +5,9 @@ import com.pedrobneto.mock.engine.client.model.MockConfiguration
 import com.pedrobneto.mock.engine.client.model.MockEngineApi
 import com.pedrobneto.mock.engine.client.view.MockState
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.HttpClientEngineBase
 import io.ktor.client.engine.HttpClientEngineCapability
 import io.ktor.client.engine.HttpClientEngineConfig
-import io.ktor.client.engine.HttpClientEngineFactory
 import io.ktor.client.engine.callContext
 import io.ktor.client.plugins.HttpTimeoutCapability
 import io.ktor.client.plugins.websocket.WebSocketCapability
@@ -25,8 +23,8 @@ import kotlinx.serialization.json.Json
 
 private val mockConfigurationPerRequest = mutableSetOf<MockConfiguration>()
 
-fun HttpClientConfig<*>.onMockEngine(block: MockEngine.Config.() -> Unit) = engine {
-    if (this is MockEngine.Config) block.invoke(this)
+fun HttpClientConfig<*>.onMockEngine(block: MockEngineClient.Config.() -> Unit) = engine {
+    if (this is MockEngineClient.Config) block.invoke(this)
 }
 
 @MockEngineApi
@@ -46,7 +44,7 @@ fun addMockConfiguration(config: MockConfiguration) {
 fun addMockConfigurations(vararg configs: MockConfiguration) =
     configs.forEach(::addMockConfiguration)
 
-class MockEngine internal constructor(override val config: Config) :
+class MockEngineClient(override val config: Config) :
     HttpClientEngineBase("MockEngine") {
 
     private val contextState: CompletableJob = Job()
@@ -107,22 +105,18 @@ class MockEngine internal constructor(override val config: Config) :
         mockConfigurationPerRequest.firstNotNullOfOrNull { configuration ->
             configuration.takeIf {
                 (it.allowCustomJson || it.filePaths.isNotEmpty()) && requestPath.matches(
-                    it.requestPath.replace("/\\{.+\\}/".toRegex(), "/[^/]+/")
+                    it.requestPath
+                        .replace("\\{[^}]+\\}".toRegex(), "[^/]+")
                         .replace("(https|http)://(.+)((:\\d+)*)/(.*)".toRegex(), "$1://$2/$5")
                         .toRegex()
                 )
             }
         } ?: error("[MockEngine] No mocks found for path: $requestPath")
 
-    class Config internal constructor(
+    class Config(
         var baseUrl: String = "",
         var onProvideJson: () -> Json = {
             error("[MockEngine.Config] Couldn't retrieve Json instance")
         }
     ) : HttpClientEngineConfig()
-
-    companion object : HttpClientEngineFactory<Config> {
-        override fun create(block: Config.() -> Unit): HttpClientEngine =
-            MockEngine(Config().apply(block))
-    }
 }

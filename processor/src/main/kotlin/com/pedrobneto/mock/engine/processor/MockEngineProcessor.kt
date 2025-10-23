@@ -11,7 +11,7 @@ import com.pedrobneto.mock.engine.annotation.Mock
 import com.pedrobneto.mock.engine.processor.model.FunctionData
 
 private const val MOCK_ENGINE_PACKAGE = "com.pedrobneto.mock.engine.client"
-private const val MOCK_ENGINE_DATA_FILE_NAME = "MockEngineData"
+private const val MOCK_ENGINE_DATA_FILE_NAME = "MockEngine"
 
 class MockEngineProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
@@ -32,10 +32,7 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
             .mapNotNull { FunctionData(it, environment.logger) }
             .toList()
 
-        if (functionList.isEmpty()) {
-            environment.logger.warn("[Processor] No mocks found")
-            return emptyList()
-        }
+        if (functionList.isEmpty()) environment.logger.warn("[Processor] No mocks found")
 
         environment.codeGenerator.createNewFile(
             dependencies = Dependencies(false),
@@ -68,17 +65,27 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
         return """
 package $MOCK_ENGINE_PACKAGE
 
-import com.pedrobneto.mock.engine.client.model.RequestData
+import com.pedrobneto.mock.engine.client.model.MockConfiguration
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.HttpClientEngineFactory
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 
-object $MOCK_ENGINE_DATA_FILE_NAME {
-    fun loadMocks() {
-        addMockConfigurations(
-            $mockedDataEntries
-        )
-    }
-}
-    """.trimIndent()
+object $MOCK_ENGINE_DATA_FILE_NAME : HttpClientEngineFactory<MockEngineClient.Config> {
+    ${
+            if (mockedDataEntries.isNotEmpty()) {
+                """init {
+            addMockConfigurations(
+                $mockedDataEntries
+            )
+        }
+        """.trimIndent()
+            } else {
+                ""
+            }
+        }
+    override fun create(block: MockEngineClient.Config.() -> Unit): HttpClientEngine =
+        MockEngineClient(MockEngineClient.Config().apply(block))
+}""".trimIndent()
     }
 }

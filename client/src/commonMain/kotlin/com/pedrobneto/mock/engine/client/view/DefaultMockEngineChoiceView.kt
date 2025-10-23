@@ -4,11 +4,16 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -34,31 +39,51 @@ import kotlinx.coroutines.launch
 @Composable
 private fun OptionListView(
     modifier: Modifier = Modifier,
+    allowCustomJson: Boolean,
     fileOptions: List<FileOptions>,
-    onOptionSelected: (option: MockOption.Default) -> Unit
+    onOptionSelected: (option: MockOption.Default) -> Unit,
+    onToggleState: () -> Unit,
 ) {
     Column(modifier = modifier) {
-        fileOptions.forEach { fileOption ->
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    text = "Mock file: ${fileOption.fileName}",
-                    fontSize = 12.sp
-                )
+        Column(
+            modifier = Modifier.weight(weight = 1f, fill = false)
+                .verticalScroll(rememberScrollState())
+        ) {
+            fileOptions.forEach { fileOption ->
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Mock file: ${fileOption.fileName}",
+                        fontSize = 12.sp
+                    )
 
-                fileOption.options.forEach { option ->
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(all = 16.dp)
-                            .clickable { onOptionSelected.invoke(option) },
-                        verticalArrangement = Arrangement.spacedBy(space = 4.dp)
-                    ) {
-                        Text(
-                            text = "[${option.statusCode}] ${option.description}",
-                            fontSize = 14.sp
-                        )
-                        Text(text = "Response file: ${option.responseFile}", fontSize = 10.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    fileOption.options.forEach { option ->
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable { onOptionSelected.invoke(option) }
+                                .padding(all = 16.dp),
+                        ) {
+                            Text(
+                                text = "[${option.statusCode}] ${option.description}",
+                                fontSize = 14.sp
+                            )
+                            Text(text = "Response file: ${option.responseFile}", fontSize = 10.sp)
+                        }
                     }
+                }
+            }
+
+            if (allowCustomJson) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = onToggleState,
+                        content = { Text(text = "Custom JSON", fontSize = 16.sp) }
+                    )
                 }
             }
         }
@@ -68,7 +93,8 @@ private fun OptionListView(
 @Composable
 private fun CustomJsonInputView(
     modifier: Modifier = Modifier,
-    onOptionSelected: (option: MockOption) -> Unit
+    onOptionSelected: (option: MockOption) -> Unit,
+    onToggleState: () -> Unit
 ) {
     var json by remember { mutableStateOf("") }
     var statusCode by remember { mutableStateOf("") }
@@ -97,7 +123,7 @@ private fun CustomJsonInputView(
             TextField(
                 modifier = Modifier.weight(3f),
                 value = statusCode,
-                onValueChange = { statusCode = it },
+                onValueChange = { statusCode = it.filter(Char::isDigit) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.None,
@@ -111,15 +137,29 @@ private fun CustomJsonInputView(
             )
         }
 
-        Button(onClick = {
-            onOptionSelected.invoke(
-                MockOption.Custom(
-                    statusCode = statusCode.toIntOrNull() ?: 200,
-                    responseJson = json
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                modifier = Modifier.weight(1f),
+                onClick = onToggleState,
+                content = { Text(text = "Option list", fontSize = 16.sp) }
             )
-        }) {
-            Text(text = "Confirm", fontSize = 16.sp)
+
+            Button(
+                modifier = Modifier.weight(1f),
+                content = { Text(text = "Confirm", fontSize = 16.sp) },
+                onClick = {
+                    onOptionSelected.invoke(
+                        MockOption.Custom(
+                            statusCode = statusCode.toIntOrNull() ?: 200,
+                            responseJson = json
+                        )
+                    )
+                }
+            )
         }
     }
 }
@@ -128,13 +168,12 @@ private fun CustomJsonInputView(
 @Composable
 fun DefaultMockEngineChoiceView() {
     val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     var isInsertingCustomJson by remember { mutableStateOf(false) }
 
     MockEngineChoiceView { allowCustomJson, dataList, onOptionSelected ->
         ModalBottomSheet(
-            modifier = Modifier.padding(bottom = 16.dp),
             sheetState = sheetState,
             onDismissRequest = {
                 onOptionSelected.invoke(
@@ -146,20 +185,6 @@ fun DefaultMockEngineChoiceView() {
                 modifier = Modifier.fillMaxWidth()
                     .animateContentSize(alignment = Alignment.BottomCenter)
             ) {
-                if (allowCustomJson) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Button(onClick = { isInsertingCustomJson = !isInsertingCustomJson }) {
-                            Text(
-                                text = if (isInsertingCustomJson) "Option list" else "Custom JSON",
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-
                 fun selectOption(option: MockOption) {
                     scope.launch { sheetState.hide() }.invokeOnCompletion {
                         if (!sheetState.isVisible) onOptionSelected.invoke(option)
@@ -168,14 +193,17 @@ fun DefaultMockEngineChoiceView() {
 
                 if (isInsertingCustomJson) {
                     CustomJsonInputView(
-                        modifier = Modifier.fillMaxWidth(),
-                        onOptionSelected = ::selectOption
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        onOptionSelected = ::selectOption,
+                        onToggleState = { isInsertingCustomJson = false }
                     )
                 } else {
                     OptionListView(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        allowCustomJson = allowCustomJson,
                         fileOptions = dataList,
-                        onOptionSelected = ::selectOption
+                        onOptionSelected = ::selectOption,
+                        onToggleState = { isInsertingCustomJson = true }
                     )
                 }
             }

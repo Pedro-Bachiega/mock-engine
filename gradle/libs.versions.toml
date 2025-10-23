@@ -53,7 +53,6 @@ toolkit-arch = "2.0.0-rc03"
 
 ## Tools
 koin = "4.1.1"
-mock-engine = "0.0.1-alpha03"
 
 # ------------------------------------------------------------------------------------------------ #
 [libraries]
@@ -136,7 +135,6 @@ ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 lint-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 lint-ktlint = { id = "org.jlleitschuh.gradle.ktlint-idea", version.ref = "ktlint" }
 quality-jacoco = { id = "jacoco" }
-mock-engine-gradle-plugin = { id = "io.github.pedro-bachiega.mock-engine", version.ref = "mock-engine" }
 vanniktech-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 
 # ------------------------------------------------------------------------------------------------ #

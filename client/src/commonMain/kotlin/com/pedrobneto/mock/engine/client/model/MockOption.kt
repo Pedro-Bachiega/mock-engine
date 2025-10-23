@@ -48,7 +48,6 @@ sealed class MockOption {
             json: Json
         ): Any = getFileContentFromResources("/$responseFile")
             ?.let { content -> json.decodeFromString(serializer, content) }
-            ?.also { println("[MockEngine] Response: $it") }
             ?: error("[MockEngine] Couldn't deserialize content from file '/$responseFile'")
     }
 
@@ -62,7 +61,6 @@ sealed class MockOption {
             serializer: KSerializer<*>,
             json: Json
         ): Any = json.decodeFromString(serializer, responseJson)
-            ?.also { println("[MockEngine] Response: $it") }
             ?: error("[MockEngine] Couldn't deserialize content '$responseJson'")
     }
 }
