@@ -8,7 +8,6 @@ import com.pedrobneto.mock.engine.annotation.Mock
 
 internal class FunctionData(
     val requestPath: String,
-    val allowCustomJson: Boolean,
     val filePaths: List<String>,
     val returnType: Pair<String, List<String>>,
 ) {
@@ -46,7 +45,6 @@ internal class FunctionData(
 
             return FunctionData(
                 requestPath = requestPath,
-                allowCustomJson = mockAnnotation.allowCustomJson,
                 filePaths = files.toList(),
                 returnType = typeInfo
             )

@@ -6,7 +6,6 @@ import kotlinx.serialization.json.Json
 
 data class MockConfiguration(
     val requestPath: String,
-    val allowCustomJson: Boolean,
     val serializer: KSerializer<*>,
     val filePaths: List<String>
 ) {

@@ -6,7 +6,7 @@ import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Path
 
 internal interface SampleApi {
-    @Mock(files = ["mock/sample-mock.json"], allowCustomJson = true)
+    @Mock(files = ["mock/sample-mock.json"])
     @GET("sample-url/{customPath}")
     suspend fun sampleRequest(@Path("customPath") customPath: String): SampleModel
 }

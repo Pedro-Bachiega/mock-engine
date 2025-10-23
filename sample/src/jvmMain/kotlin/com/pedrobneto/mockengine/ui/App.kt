@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import br.com.arch.toolkit.compose.collectAsComposableState
 import br.com.arch.toolkit.lumber.Lumber
 import br.com.arch.toolkit.result.EventDataStatus
-import com.pedrobneto.mock.engine.client.view.DefaultMockEngineChoiceView
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -66,7 +65,5 @@ internal fun App(viewModel: SampleViewModel = koinViewModel()) {
                 content = { Text(text = "Fetch") }
             )
         }
-
-        DefaultMockEngineChoiceView()
     }
 }

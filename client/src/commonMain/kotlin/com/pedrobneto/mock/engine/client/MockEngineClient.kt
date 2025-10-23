@@ -1,9 +1,17 @@
 package com.pedrobneto.mock.engine.client
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.launchApplication
 import com.pedrobneto.mock.engine.client.model.FileOptions
 import com.pedrobneto.mock.engine.client.model.MockConfiguration
 import com.pedrobneto.mock.engine.client.model.MockEngineApi
+import com.pedrobneto.mock.engine.client.view.DefaultMockEngineChoiceView
 import com.pedrobneto.mock.engine.client.view.MockState
+import com.pedrobneto.mock.engine.client.view.mockState
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineBase
 import io.ktor.client.engine.HttpClientEngineCapability
@@ -16,8 +24,9 @@ import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.utils.io.InternalAPI
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
@@ -29,14 +38,6 @@ fun HttpClientConfig<*>.onMockEngine(block: MockEngineClient.Config.() -> Unit) 
 
 @MockEngineApi
 fun addMockConfiguration(config: MockConfiguration) {
-    if (config.filePaths.isEmpty() && !config.allowCustomJson) {
-        println(
-            "[MockEngine] Skipping configuration for ${config.requestPath}. " +
-                    "Reason: No file paths provided and custom json not allowed."
-        )
-        return
-    }
-
     mockConfigurationPerRequest += config
 }
 
@@ -75,24 +76,20 @@ class MockEngineClient(override val config: Config) :
 
             val allOptions = mockOptionsList.flatMap(FileOptions::options)
             if (allOptions.size == 1) {
-                MockState.chosenMockOption = allOptions.first()
+                mockState.value = MockState(chosenMockOption = allOptions.first())
             } else {
-                MockState.allowCustomJson = mockConfiguration.allowCustomJson
-                MockState.currentMockOptionList = mockOptionsList
-                while (MockState.currentMockOptionList != null && MockState.chosenMockOption == null) {
-                    delay(50L)
-                }
+                mockState.value = MockState(
+                    allowCustomJson = config.allowCustomJson,
+                    currentMockOptionList = mockOptionsList
+                )
+
+                runBlocking { drawMockApplication() }
             }
 
-            val response = MockState.chosenMockOption
+            mockState.value.chosenMockOption
                 ?.buildResponse(callContext, serializer, json)
+                ?.also { mockState.value = MockState() }
                 ?: error("[MockEngine] Option could not be deserialized")
-
-            response.also {
-                MockState.allowCustomJson = false
-                MockState.chosenMockOption = null
-                MockState.currentMockOptionList = null
-            }
         }
     }
 
@@ -104,19 +101,37 @@ class MockEngineClient(override val config: Config) :
     private fun getRequestFiles(requestPath: String): MockConfiguration =
         mockConfigurationPerRequest.firstNotNullOfOrNull { configuration ->
             configuration.takeIf {
-                (it.allowCustomJson || it.filePaths.isNotEmpty()) && requestPath.matches(
+                config.allowCustomJson || (it.filePaths.isNotEmpty() && requestPath.matches(
                     it.requestPath
                         .replace("\\{[^}]+\\}".toRegex(), "[^/]+")
                         .replace("(https|http)://(.+)((:\\d+)*)/(.*)".toRegex(), "$1://$2/$5")
                         .toRegex()
-                )
+                ))
             }
-        } ?: error("[MockEngine] No mocks found for path: $requestPath")
+        } ?: error("[MockEngine] No mocks found for path: $requestPath.")
+
+    private fun CoroutineScope.drawMockApplication() = launchApplication {
+        val state by mockState
+
+        LaunchedEffect(state) {
+            if (state.chosenMockOption != null) exitApplication()
+        }
+
+        Window(onCloseRequest = ::exitApplication, title = "Mock Engine") {
+            config.onDrawChoiceView.invoke()
+        }
+    }
 
     class Config(
         var baseUrl: String = "",
+        var allowCustomJson: Boolean = true,
         var onProvideJson: () -> Json = {
             error("[MockEngine.Config] Couldn't retrieve Json instance")
+        },
+        var onDrawChoiceView: @Composable () -> Unit = {
+            MaterialTheme {
+                DefaultMockEngineChoiceView()
+            }
         }
     ) : HttpClientEngineConfig()
 }

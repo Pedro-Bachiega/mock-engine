@@ -1,5 +1,9 @@
 package com.pedrobneto.mock.engine.processor
 
+import br.com.arch.toolkit.lumber.DebugTree
+import br.com.arch.toolkit.lumber.Lumber
+import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.getKotlinClassByName
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -22,23 +26,47 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
     SymbolProcessor {
 
     private var invoked = false
+    private var mocksFound = false
 
+    init {
+        Lumber.plant(DebugTree())
+    }
+
+    @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> = runCatching {
-        if (invoked) return emptyList()
+        Lumber.debug("[MockEngineProcessor] Starting process")
+
+        if (invoked && mocksFound) {
+            Lumber.debug("[MockEngineProcessor] Already found mocks")
+            return emptyList()
+        }
+
         invoked = true
 
-        val functionList = resolver.getSymbolsWithAnnotation(Mock::class.qualifiedName!!)
+        val annotatedFunctions = resolver
+            .getSymbolsWithAnnotation(annotationName = Mock::class.qualifiedName!!, inDepth = true)
             .filterIsInstance<KSFunctionDeclaration>()
-            .mapNotNull { FunctionData(it, environment.logger) }
             .toList()
+        val functionDataList = annotatedFunctions
+            .mapNotNull { FunctionData(it, environment.logger) }
 
-        if (functionList.isEmpty()) environment.logger.warn("[Processor] No mocks found")
+        mocksFound = functionDataList.isNotEmpty()
+        if (mocksFound) {
+            Lumber.debug("[MockEngineProcessor] Mocks found: ${functionDataList.size}")
+        } else {
+            Lumber.debug("[MockEngineProcessor] No mocks found")
+            resolver.getKotlinClassByName("$MOCK_ENGINE_PACKAGE.$MOCK_ENGINE_DATA_FILE_NAME")
+                ?.let {
+                    Lumber.debug("[MockEngineProcessor] Generated class found, not overwriting")
+                    return emptyList()
+                }
+        }
 
         environment.codeGenerator.createNewFile(
             dependencies = Dependencies(false),
             packageName = MOCK_ENGINE_PACKAGE,
             fileName = MOCK_ENGINE_DATA_FILE_NAME.removePrefix("")
-        ).use { it.write(mockDataTemplate(mocks = functionList).toByteArray()) }
+        ).use { it.write(mockDataTemplate(mocks = functionDataList).toByteArray()) }
 
         return emptyList()
     }.getOrDefault(emptyList())
@@ -53,13 +81,12 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
             }
 
             """MockConfiguration(
-                requestPath = "${functionData.requestPath}",
-                allowCustomJson = ${functionData.allowCustomJson},
-                serializer = $serializer,
-                filePaths = listOf(
-                    "${functionData.filePaths.joinToString(",\n") { "/$it" }}"
-                )
-            )""".trimIndent()
+                    requestPath = "${functionData.requestPath}",
+                    serializer = $serializer,
+                    filePaths = listOf(
+                        "${functionData.filePaths.joinToString(",\n") { "/$it" }}"
+                    )
+                )""".trimIndent()
         }
 
         return """
@@ -72,18 +99,20 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 
 object $MOCK_ENGINE_DATA_FILE_NAME : HttpClientEngineFactory<MockEngineClient.Config> {
+    init {
     ${
             if (mockedDataEntries.isNotEmpty()) {
-                """init {
+                """
             addMockConfigurations(
-                $mockedDataEntries
-            )
-        }
+            $mockedDataEntries
+        )
         """.trimIndent()
             } else {
                 ""
             }
         }
+    }
+
     override fun create(block: MockEngineClient.Config.() -> Unit): HttpClientEngine =
         MockEngineClient(MockEngineClient.Config().apply(block))
 }""".trimIndent()
