@@ -1,8 +1,8 @@
 package com.pedrobneto.mock.engine.client
 
-import com.pedrobneto.mock.engine.client.model.MockData
+import com.pedrobneto.mock.engine.client.model.FileOptions
+import com.pedrobneto.mock.engine.client.model.MockConfiguration
 import com.pedrobneto.mock.engine.client.model.MockEngineApi
-import com.pedrobneto.mock.engine.client.model.RequestData
 import com.pedrobneto.mock.engine.client.view.MockState
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
@@ -23,25 +23,28 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-private val mockConfigurationPerRequest = mutableMapOf<String, RequestData>()
+private val mockConfigurationPerRequest = mutableSetOf<MockConfiguration>()
 
 fun HttpClientConfig<*>.onMockEngine(block: MockEngine.Config.() -> Unit) = engine {
     if (this is MockEngine.Config) block.invoke(this)
 }
 
 @MockEngineApi
-fun addMockConfiguration(path: String, requestData: RequestData) {
-    if (requestData.filePaths.isEmpty()) {
-        println("[MockEngine] Skipping request data for $path. Reason: No file paths provided")
+fun addMockConfiguration(config: MockConfiguration) {
+    if (config.filePaths.isEmpty() && !config.allowCustomJson) {
+        println(
+            "[MockEngine] Skipping configuration for ${config.requestPath}. " +
+                    "Reason: No file paths provided and custom json not allowed."
+        )
         return
     }
 
-    mockConfigurationPerRequest[path] = requestData
+    mockConfigurationPerRequest += config
 }
 
 @MockEngineApi
-fun addMockConfigurations(map: Map<String, RequestData>) =
-    map.forEach { (path, requestData) -> addMockConfiguration(path, requestData) }
+fun addMockConfigurations(vararg configs: MockConfiguration) =
+    configs.forEach(::addMockConfiguration)
 
 class MockEngine internal constructor(override val config: Config) :
     HttpClientEngineBase("MockEngine") {
@@ -55,7 +58,9 @@ class MockEngine internal constructor(override val config: Config) :
     )
 
     init {
-        check(config.baseUrl.isNotEmpty()) { "[MockEngine] No base url provided in [MockEngine.Config]" }
+        check(config.baseUrl.isNotEmpty()) {
+            "[MockEngine] No base url provided in [MockEngine.Config]"
+        }
     }
 
     @OptIn(InternalAPI::class)
@@ -65,31 +70,31 @@ class MockEngine internal constructor(override val config: Config) :
 
         return withContext(dispatcher + callContext) {
             val requestPath = data.url.toString().removePrefix(config.baseUrl)
-            println("[MockEngine] Processing request for path: $requestPath")
+            val mockConfiguration = getRequestFiles(requestPath)
 
-            val requestData = getRequestFiles(requestPath)
-            val mockDataList = requestData.getMockDataList(json)
-                .ifEmpty { error("[MockEngine] No files found for path: $requestPath") }
+            val mockOptionsList = mockConfiguration.getMockOptionList(json)
+            val serializer = mockConfiguration.serializer
 
-            val allOptions = mockDataList.flatMap(MockData::options)
-            val isSingleOptionMock = allOptions.size == 1
-
-            if (isSingleOptionMock) {
+            val allOptions = mockOptionsList.flatMap(FileOptions::options)
+            if (allOptions.size == 1) {
                 MockState.chosenMockOption = allOptions.first()
             } else {
-                MockState.currentMockDataList = mockDataList
-                while (MockState.currentMockDataList != null && MockState.chosenMockOption == null) {
+                MockState.allowCustomJson = mockConfiguration.allowCustomJson
+                MockState.currentMockOptionList = mockOptionsList
+                while (MockState.currentMockOptionList != null && MockState.chosenMockOption == null) {
                     delay(50L)
                 }
             }
 
             val response = MockState.chosenMockOption
-                ?.deserialize(callContext, requestData.serializer, json)
+                ?.buildResponse(callContext, serializer, json)
+                ?: error("[MockEngine] Option could not be deserialized")
 
-            MockState.currentMockDataList = null
-            MockState.chosenMockOption = null
-
-            response ?: error("[MockEngine] No option selected")
+            response.also {
+                MockState.allowCustomJson = false
+                MockState.chosenMockOption = null
+                MockState.currentMockOptionList = null
+            }
         }
     }
 
@@ -98,14 +103,16 @@ class MockEngine internal constructor(override val config: Config) :
         coroutineContext[Job]?.invokeOnCompletion { contextState.complete() }
     }
 
-    private fun getRequestFiles(requestPath: String): RequestData =
-        mockConfigurationPerRequest.firstNotNullOfOrNull { (originalPath, files) ->
-            files.takeIf {
-                requestPath.matches(
-                    originalPath.replace("/\\{.+\\}/".toRegex(), "/[^/]+/").toRegex()
+    private fun getRequestFiles(requestPath: String): MockConfiguration =
+        mockConfigurationPerRequest.firstNotNullOfOrNull { configuration ->
+            configuration.takeIf {
+                (it.allowCustomJson || it.filePaths.isNotEmpty()) && requestPath.matches(
+                    it.requestPath.replace("/\\{.+\\}/".toRegex(), "/[^/]+/")
+                        .replace("(https|http)://(.+)((:\\d+)*)/(.*)".toRegex(), "$1://$2/$5")
+                        .toRegex()
                 )
             }
-        } ?: error("[MockEngine] No request data for path: $requestPath")
+        } ?: error("[MockEngine] No mocks found for path: $requestPath")
 
     class Config internal constructor(
         var baseUrl: String = "",

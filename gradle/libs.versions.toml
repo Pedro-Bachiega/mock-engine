@@ -10,8 +10,8 @@ ktlint = "11.6.1"
 ## --- Build Config and SDK --- ##
 build-version-name = "1.0.0"
 build-version-code = "1"
-build-sdk-min-toolkit = "26"
-build-sdk-min-sample = "26"
+build-sdk-min-toolkit = "28"
+build-sdk-min-sample = "28"
 build-sdk-compile = "35"
 build-sdk-target = "35"
 build-tools = "35.0.0"
@@ -21,36 +21,74 @@ jetbrains-compose = "1.8.2"
 jetbrains-dokka = "2.0.0"
 jetbrains-kotlin = "2.2.10"
 jetbrains-kotlin-gradle-dsl = "6.2.0"
+jetbrains-coroutines = "1.10.2"
 jetbrains-kover = "0.9.1"
+jetbrains-datetime = "0.7.1"
 jetbrains-serialization = "1.9.0"
 
 ## AndroidX
-androidx-room = "2.7.1"
+androidx-appcompat = "1.7.1"
+androidx-biometric = "1.2.0-alpha05"
+androidx-datastore = "1.1.7"
 
 ## AndroidX Compose
-androidx-compose-activity = "1.10.0"
-androidx-compose-core = "1.7.6"
+androidx-compose-activity = "1.10.1"
+androidx-compose-core = "1.9.0"
+jetbrains-compose-lifecycle = "2.9.2"
+jetbrains-compose-navigation = "2.8.0-alpha13"
 
 ## Google
 google-ksp = "2.2.10-2.0.2"
-
-## Ktor
-ktor = "3.2.3"
 
 ## Gradle
 gradle-publish = "1.3.1"
 vanniktech-publish = "0.34.0"
 
+## Ktor
+ktor = "3.3.1"
+ktorfit = "2.6.4"
+
+## Toolkit
+toolkit-arch = "2.0.0-rc03"
+
+## Tools
+koin = "4.1.1"
+mock-engine = "0.0.1-alpha03"
+
 # ------------------------------------------------------------------------------------------------ #
 [libraries]
 ## JetBrains
+jetbrains-stdlib-jdk8 = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "jetbrains-kotlin" }
+jetbrains-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "jetbrains-coroutines" }
+jetbrains-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "jetbrains-coroutines" }
+jetbrains-coroutines-darwin = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-darwin", version.ref = "jetbrains-coroutines" }
+jetbrains-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "jetbrains-coroutines" }
+jetbrains-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "jetbrains-datetime" }
 jetbrains-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "jetbrains-serialization" }
+
+## JetBrains Compose
+jetbrains-compose-lifecycle-runtime = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrains-compose-lifecycle" }
+jetbrains-compose-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "jetbrains-compose-lifecycle" }
+jetbrains-compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "jetbrains-compose-navigation" }
+
+## Toolkit
+toolkit-arch-event-observer-core = { group = "io.github.matheus-corregiari", name = "event-observer", version.ref = "toolkit-arch" }
+toolkit-arch-event-observer-compose = { group = "io.github.matheus-corregiari", name = "event-observer-compose", version.ref = "toolkit-arch" }
+toolkit-arch-splinter = { group = "io.github.matheus-corregiari", name = "splinter", version.ref = "toolkit-arch" }
+toolkit-arch-lumber = { group = "io.github.matheus-corregiari", name = "lumber", version.ref = "toolkit-arch" }
 
 ## Ktor
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktor-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktorfit = { group = "de.jensklingenberg.ktorfit", name = "ktorfit-lib", version.ref = "ktorfit" }
 
 ## Tools
 google-ksp = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "google-ksp" }
+koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 lint-detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
 
 # --------------------------------------------- Plugin Libraries --------------------------------------------------- #
@@ -76,7 +114,6 @@ plugin-vanniktech-publish = { group = "com.vanniktech.maven.publish", name = "co
 ## Android
 android-application = { id = "com.android.application", version.ref = "android-plugin" }
 android-library = { id = "com.android.library", version.ref = "android-plugin" }
-android-room = { id = "androidx.room", version.ref = "androidx-room" }
 
 ## Android
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "google-ksp" }
@@ -95,9 +132,11 @@ jetbrains-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", ve
 ## Tools to make my life easier
 dexcount = { id = "com.getkeepsafe.dexcount", version.ref = "dexcount" }
 gradle-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-publish" }
+ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 lint-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 lint-ktlint = { id = "org.jlleitschuh.gradle.ktlint-idea", version.ref = "ktlint" }
 quality-jacoco = { id = "jacoco" }
+mock-engine-gradle-plugin = { id = "io.github.pedro-bachiega.mock-engine", version.ref = "mock-engine" }
 vanniktech-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 
 # ------------------------------------------------------------------------------------------------ #

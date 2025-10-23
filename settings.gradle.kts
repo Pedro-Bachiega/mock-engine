@@ -19,11 +19,11 @@ rootProject.name = "mock-engine"
 includeBuild("kmp-build-plugin")
 
 include(
-//    ":sample",
-
     ":annotation",
     ":client",
     ":processor",
 
     ":mock-engine-gradle-plugin",
+
+    ":sample",
 )

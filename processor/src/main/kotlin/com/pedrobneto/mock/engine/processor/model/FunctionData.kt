@@ -8,6 +8,7 @@ import com.pedrobneto.mock.engine.annotation.Mock
 
 internal class FunctionData(
     val requestPath: String,
+    val allowCustomJson: Boolean,
     val filePaths: List<String>,
     val returnType: Pair<String, List<String>>,
 ) {
@@ -26,7 +27,7 @@ internal class FunctionData(
             val mockAnnotation = declaration.getAnnotationsByType(Mock::class).firstOrNull()
             if (mockAnnotation == null || requestPath == null) return null
 
-            val files = mockAnnotation.files.split(",").map(String::trim)
+            val files = mockAnnotation.files.map(String::trim)
             if (files.isEmpty()) {
                 logger.error("No files found in mock annotation in $functionName")
                 return null
@@ -45,6 +46,7 @@ internal class FunctionData(
 
             return FunctionData(
                 requestPath = requestPath,
+                allowCustomJson = mockAnnotation.allowCustomJson,
                 filePaths = files.toList(),
                 returnType = typeInfo
             )

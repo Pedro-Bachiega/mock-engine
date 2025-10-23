@@ -55,13 +55,14 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
                 "serializer<$typeName<${typeParameters.joinToString(", ")}>>()"
             }
 
-            """"${functionData.requestPath}" to RequestData(
-                    $serializer,
-                    listOf(
-                        "${functionData.filePaths.joinToString(",\n") { "/$it" }}"
-                    )
-                ),
-        """
+            """MockConfiguration(
+                requestPath = "${functionData.requestPath}",
+                allowCustomJson = ${functionData.allowCustomJson},
+                serializer = $serializer,
+                filePaths = listOf(
+                    "${functionData.filePaths.joinToString(",\n") { "/$it" }}"
+                )
+            )""".trimIndent()
         }
 
         return """
@@ -74,9 +75,7 @@ import kotlinx.serialization.serializer
 object $MOCK_ENGINE_DATA_FILE_NAME {
     fun loadMocks() {
         addMockConfigurations(
-            mapOf(
-                $mockedDataEntries
-            )
+            $mockedDataEntries
         )
     }
 }
