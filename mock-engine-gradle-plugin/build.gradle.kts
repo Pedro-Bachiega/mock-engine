@@ -6,7 +6,6 @@ plugins {
 apply(from = "$rootDir/versioning.gradle.kts")
 
 dependencies {
-    implementation(libs.plugin.jetbrains.extensions)
     implementation(libs.plugin.jetbrains.kotlin.plugin)
 }
 

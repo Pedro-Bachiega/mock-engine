@@ -25,7 +25,6 @@ kotlin {
             implementation(libs.toolkit.arch.lumber)
             implementation(libs.toolkit.arch.splinter)
 
-            implementation(libs.jetbrains.compose.navigation)
             implementation(libs.jetbrains.compose.lifecycle.runtime)
             implementation(libs.jetbrains.compose.lifecycle.viewmodel)
             implementation(libs.jetbrains.coroutines.core)

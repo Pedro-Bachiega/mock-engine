@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------------------------ #
 [versions]
 ## --- Plugins and more general stuff --- ##
-android-plugin = "8.12.0"
+android-plugin = "8.12.3"
 jacoco = "0.8.9"
 dexcount = "4.0.0"
 detekt = "1.23.8"
@@ -17,12 +17,13 @@ build-sdk-target = "35"
 build-tools = "35.0.0"
 
 ## JetBrains
-jetbrains-compose = "1.8.2"
-jetbrains-dokka = "2.0.0"
-jetbrains-kotlin = "2.2.10"
-jetbrains-kotlin-gradle-dsl = "6.2.0"
+jetbrains-compose = "1.9.1"
+jetbrains-compose-lifecycle = "2.9.5"
 jetbrains-coroutines = "1.10.2"
-jetbrains-kover = "0.9.1"
+jetbrains-dokka = "2.1.0"
+jetbrains-kotlin = "2.2.21"
+jetbrains-kotlin-gradle-dsl = "6.4.1"
+jetbrains-kover = "0.9.3"
 jetbrains-datetime = "0.7.1"
 jetbrains-serialization = "1.9.0"
 
@@ -34,11 +35,9 @@ androidx-datastore = "1.1.7"
 ## AndroidX Compose
 androidx-compose-activity = "1.10.1"
 androidx-compose-core = "1.9.0"
-jetbrains-compose-lifecycle = "2.9.2"
-jetbrains-compose-navigation = "2.8.0-alpha13"
 
 ## Google
-google-ksp = "2.2.10-2.0.2"
+google-ksp = "2.3.0"
 
 ## Gradle
 gradle-publish = "1.3.1"
@@ -49,7 +48,7 @@ ktor = "3.3.1"
 ktorfit = "2.6.4"
 
 ## Toolkit
-toolkit-arch = "2.0.0-rc03"
+toolkit-arch = "2.0.0-rc05"
 
 ## Tools
 koin = "4.1.1"
@@ -65,16 +64,20 @@ jetbrains-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 jetbrains-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "jetbrains-datetime" }
 jetbrains-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "jetbrains-serialization" }
 
+## AndroidX
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-compose-activity = { module = "androidx.activity:activity-compose", version.ref = "androidx-compose-activity" }
+
 ## JetBrains Compose
 jetbrains-compose-lifecycle-runtime = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrains-compose-lifecycle" }
 jetbrains-compose-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "jetbrains-compose-lifecycle" }
-jetbrains-compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref = "jetbrains-compose-navigation" }
 
 ## Toolkit
 toolkit-arch-event-observer-core = { group = "io.github.matheus-corregiari", name = "event-observer", version.ref = "toolkit-arch" }
 toolkit-arch-event-observer-compose = { group = "io.github.matheus-corregiari", name = "event-observer-compose", version.ref = "toolkit-arch" }
 toolkit-arch-splinter = { group = "io.github.matheus-corregiari", name = "splinter", version.ref = "toolkit-arch" }
 toolkit-arch-lumber = { group = "io.github.matheus-corregiari", name = "lumber", version.ref = "toolkit-arch" }
+toolkit-arch-android-util = { group = "io.github.matheus-corregiari", name = "util", version.ref = "toolkit-arch" }
 
 ## Ktor
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
@@ -93,7 +96,6 @@ lint-detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt
 # --------------------------------------------- Plugin Libraries --------------------------------------------------- #
 ## JetBrains
 plugin-jetbrains-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "jetbrains-dokka" }
-plugin-jetbrains-extensions = { group = "org.jetbrains.kotlin", name = "kotlin-android-extensions", version.ref = "jetbrains-kotlin" }
 plugin-jetbrains-kotlin-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "jetbrains-kotlin" }
 plugin-jetbrains-kover = { group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "jetbrains-kover" }
 

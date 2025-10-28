@@ -114,7 +114,7 @@ object $MOCK_ENGINE_DATA_FILE_NAME : HttpClientEngineFactory<MockEngineClient.Co
     }
 
     override fun create(block: MockEngineClient.Config.() -> Unit): HttpClientEngine =
-        MockEngineClient(MockEngineClient.Config().apply(block))
+        MockEngineClient(block)
 }""".trimIndent()
     }
 }

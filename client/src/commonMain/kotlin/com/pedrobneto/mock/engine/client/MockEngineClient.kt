@@ -2,10 +2,6 @@ package com.pedrobneto.mock.engine.client
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.launchApplication
 import com.pedrobneto.mock.engine.client.model.FileOptions
 import com.pedrobneto.mock.engine.client.model.MockConfiguration
 import com.pedrobneto.mock.engine.client.model.MockEngineApi
@@ -32,6 +28,8 @@ import kotlinx.serialization.json.Json
 
 private val mockConfigurationPerRequest = mutableSetOf<MockConfiguration>()
 
+internal expect fun CoroutineScope.requestMockChoiceView()
+
 fun HttpClientConfig<*>.onMockEngine(block: MockEngineClient.Config.() -> Unit) = engine {
     if (this is MockEngineClient.Config) block.invoke(this)
 }
@@ -45,7 +43,7 @@ fun addMockConfiguration(config: MockConfiguration) {
 fun addMockConfigurations(vararg configs: MockConfiguration) =
     configs.forEach(::addMockConfiguration)
 
-class MockEngineClient(override val config: Config) :
+class MockEngineClient private constructor(override val config: Config) :
     HttpClientEngineBase("MockEngine") {
 
     private val contextState: CompletableJob = Job()
@@ -83,7 +81,7 @@ class MockEngineClient(override val config: Config) :
                     currentMockOptionList = mockOptionsList
                 )
 
-                runBlocking { drawMockApplication() }
+                runBlocking { requestMockChoiceView() }
             }
 
             mockState.value.chosenMockOption
@@ -110,19 +108,7 @@ class MockEngineClient(override val config: Config) :
             }
         } ?: error("[MockEngine] No mocks found for path: $requestPath.")
 
-    private fun CoroutineScope.drawMockApplication() = launchApplication {
-        val state by mockState
-
-        LaunchedEffect(state) {
-            if (state.chosenMockOption != null) exitApplication()
-        }
-
-        Window(onCloseRequest = ::exitApplication, title = "Mock Engine") {
-            config.onDrawChoiceView.invoke()
-        }
-    }
-
-    class Config(
+    class Config internal constructor(
         var baseUrl: String = "",
         var allowCustomJson: Boolean = true,
         var onProvideJson: () -> Json = {
@@ -134,4 +120,11 @@ class MockEngineClient(override val config: Config) :
             }
         }
     ) : HttpClientEngineConfig()
+
+    companion object {
+        internal var instance: MockEngineClient? = null
+
+        operator fun invoke(configBlock: Config.() -> Unit): MockEngineClient =
+            MockEngineClient(Config().apply(configBlock)).also { instance = it }
+    }
 }
