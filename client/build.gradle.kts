@@ -7,7 +7,7 @@ plugins {
 android.namespace = "com.pedrobneto.mock.engine.client"
 
 kotlin {
-    sourceSets{
+    sourceSets {
         commonMain.dependencies {
             implementation(libs.jetbrains.serialization)
             implementation(libs.ktor.client.core)
