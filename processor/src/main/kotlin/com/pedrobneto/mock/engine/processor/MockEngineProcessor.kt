@@ -34,12 +34,7 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
 
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> = runCatching {
-        Lumber.debug("[MockEngineProcessor] Starting process")
-
-        if (invoked && mocksFound) {
-            Lumber.debug("[MockEngineProcessor] Already found mocks")
-            return emptyList()
-        }
+        if (invoked && mocksFound) return emptyList()
 
         invoked = true
 
@@ -51,9 +46,7 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
             .mapNotNull { FunctionData(it, environment.logger) }
 
         mocksFound = functionDataList.isNotEmpty()
-        if (mocksFound) {
-            Lumber.debug("[MockEngineProcessor] Mocks found: ${functionDataList.size}")
-        } else {
+        if (!mocksFound) {
             Lumber.debug("[MockEngineProcessor] No mocks found")
             resolver.getKotlinClassByName("$MOCK_ENGINE_PACKAGE.$MOCK_ENGINE_DATA_FILE_NAME")
                 ?.let {
