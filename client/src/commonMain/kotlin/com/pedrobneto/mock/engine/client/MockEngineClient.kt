@@ -73,21 +73,24 @@ class MockEngineClient private constructor(override val config: Config) :
             val serializer = mockConfiguration.serializer
 
             val allOptions = mockOptionsList.flatMap(FileOptions::options)
-            if (allOptions.size == 1) {
-                mockState.value = MockState(chosenMockOption = allOptions.first())
-            } else {
-                mockState.value = MockState(
-                    allowCustomJson = config.allowCustomJson,
-                    currentMockOptionList = mockOptionsList
-                )
+            when (allOptions.size) {
+                0 -> error("[MockEngine] No mocks found for path: $requestPath.")
+                1 -> mockState.value = MockState(chosenMockOption = allOptions.first())
+                else -> {
+                    mockState.value = MockState(
+                        allowCustomJson = config.allowCustomJson,
+                        currentMockOptionList = mockOptionsList
+                    )
 
-                runBlocking { requestMockChoiceView() }
+                    runBlocking { requestMockChoiceView() }
+                }
             }
 
-            mockState.value.chosenMockOption
-                ?.buildResponse(callContext, serializer, json)
-                ?.also { mockState.value = MockState() }
-                ?: error("[MockEngine] Option could not be deserialized")
+            val option = mockState.value.chosenMockOption
+                ?: error("[MockEngine] No option was selected")
+
+            option.buildResponse(callContext, serializer, json)
+                .also { mockState.value = MockState() }
         }
     }
 
@@ -99,12 +102,12 @@ class MockEngineClient private constructor(override val config: Config) :
     private fun getRequestFiles(requestPath: String): MockConfiguration =
         mockConfigurationPerRequest.firstNotNullOfOrNull { configuration ->
             configuration.takeIf {
-                config.allowCustomJson || (it.filePaths.isNotEmpty() && requestPath.matches(
+                it.filePaths.isNotEmpty() && requestPath.matches(
                     it.requestPath
                         .replace("\\{[^}]+\\}".toRegex(), "[^/]+")
                         .replace("(https|http)://(.+)((:\\d+)*)/(.*)".toRegex(), "$1://$2/$5")
                         .toRegex()
-                ))
+                )
             }
         } ?: error("[MockEngine] No mocks found for path: $requestPath.")
 

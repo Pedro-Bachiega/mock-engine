@@ -23,7 +23,5 @@ include(
     ":client",
     ":processor",
 
-    ":mock-engine-gradle-plugin",
-
     ":sample",
 )

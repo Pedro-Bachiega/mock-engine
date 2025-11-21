@@ -12,8 +12,8 @@ build-version-name = "1.0.0"
 build-version-code = "1"
 build-sdk-min-toolkit = "28"
 build-sdk-min-sample = "28"
-build-sdk-compile = "35"
-build-sdk-target = "35"
+build-sdk-compile = "36"
+build-sdk-target = "36"
 build-tools = "35.0.0"
 
 ## JetBrains

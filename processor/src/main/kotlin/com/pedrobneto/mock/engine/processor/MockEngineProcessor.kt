@@ -79,7 +79,7 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
                     filePaths = listOf(
                         "${functionData.filePaths.joinToString(",\n") { "/$it" }}"
                     )
-                )""".trimIndent()
+                ),""".trimIndent()
         }
 
         return """
@@ -88,7 +88,6 @@ package $MOCK_ENGINE_PACKAGE
 import com.pedrobneto.mock.engine.client.model.MockConfiguration
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.HttpClientEngineFactory
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.serializer
 
 object $MOCK_ENGINE_DATA_FILE_NAME : HttpClientEngineFactory<MockEngineClient.Config> {
