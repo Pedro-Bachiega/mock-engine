@@ -52,7 +52,7 @@ internal class GradlePlugin : Plugin<Project> {
             }
         }
 
-        val dependency = "io.github.pedro-bachiega:mock-engine-processor:0.0.1-alpha05"
+        val dependency = "io.github.pedro-bachiega:mock-engine-processor:0.0.1-alpha06"
         when (val kotlinExtension = kotlinExtension) {
             is KotlinSingleTargetExtension<*> -> {
                 dependencies.add("ksp", dependency)

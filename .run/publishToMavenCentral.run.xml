@@ -13,6 +13,7 @@
           <option value="clean" />
           <option value="assemble" />
           <option value="publishToMavenCentral" />
+          <option value=":gradle-plugin:publishPlugins" />
         </list>
       </option>
       <option name="vmOptions" />

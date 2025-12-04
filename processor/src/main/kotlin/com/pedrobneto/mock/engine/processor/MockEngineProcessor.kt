@@ -27,7 +27,6 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
     SymbolProcessor {
 
     private var invoked = false
-    private var mocksFound = false
 
     init {
         Lumber.plant(DebugTree())
@@ -35,13 +34,25 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
 
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        if (invoked && mocksFound) return emptyList()
-
+        if (invoked) return emptyList()
         invoked = true
+
+        val isMultiplatformWithSingleTarget =
+            environment.options["isMultiplatformWithSingleTarget"]?.toBooleanStrictOrNull() == true
+        val moduleName = resolver.getModuleName().getShortName()
 
         val annotatedFunctions = resolver
             .getSymbolsWithAnnotation(annotationName = Mock::class.qualifiedName!!, inDepth = true)
             .filterIsInstance<KSFunctionDeclaration>()
+            .filter { function ->
+                val ksFile = function.containingFile ?: return@filter false
+                val fileInCommonMainPath = ksFile.filePath.contains("commonMain")
+                val moduleNameContainsCommonMain = moduleName.contains("commonMain")
+                val isInCommonMain = (moduleNameContainsCommonMain && fileInCommonMainPath) ||
+                        (!moduleNameContainsCommonMain && !fileInCommonMainPath)
+
+                isMultiplatformWithSingleTarget || isInCommonMain
+            }
             .toList()
         val functionDataList = annotatedFunctions
             .mapNotNull { FunctionData(it, environment.logger) }
@@ -49,8 +60,9 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
             .mapNotNull { it.closestClassDeclaration()?.containingFile }
             .toTypedArray()
 
-        mocksFound = functionDataList.isNotEmpty()
-        if (!mocksFound) {
+
+
+        if (functionDataList.isEmpty()) {
             environment.logger.warn("[MockEngineProcessor] No mocks found")
             resolver.getKotlinClassByName("$MOCK_ENGINE_PACKAGE.$MOCK_ENGINE_DATA_FILE_NAME")
                 ?.let {
@@ -59,11 +71,12 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
                 }
         }
 
+        val template = mockDataTemplate(mocks = functionDataList).toByteArray()
         environment.codeGenerator.createNewFile(
             dependencies = Dependencies(true, *sourceDependencies),
             packageName = MOCK_ENGINE_PACKAGE,
             fileName = MOCK_ENGINE_DATA_FILE_NAME.removePrefix("")
-        ).use { it.write(mockDataTemplate(mocks = functionDataList).toByteArray()) }
+        ).use { it.write(template) }
 
         return emptyList()
     }
