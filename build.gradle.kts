@@ -11,5 +11,6 @@ plugins {
     alias(libs.plugins.lint.detekt) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
     alias(libs.plugins.jetbrains.kotlin.multiplatform) apply false
+    alias(libs.plugins.mock.engine) apply false
     alias(libs.plugins.vanniktech.publish) apply false
 }

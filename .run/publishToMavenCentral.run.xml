@@ -13,7 +13,6 @@
           <option value="clean" />
           <option value="assemble" />
           <option value="publishToMavenCentral" />
-          <option value=":mock-engine-gradle-plugin:publishPlugins" />
         </list>
       </option>
       <option name="vmOptions" />

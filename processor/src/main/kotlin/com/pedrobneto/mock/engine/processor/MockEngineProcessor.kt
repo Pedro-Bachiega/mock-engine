@@ -3,6 +3,7 @@ package com.pedrobneto.mock.engine.processor
 import br.com.arch.toolkit.lumber.DebugTree
 import br.com.arch.toolkit.lumber.Lumber
 import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.closestClassDeclaration
 import com.google.devtools.ksp.getKotlinClassByName
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -33,7 +34,7 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
     }
 
     @OptIn(KspExperimental::class)
-    override fun process(resolver: Resolver): List<KSAnnotated> = runCatching {
+    override fun process(resolver: Resolver): List<KSAnnotated> {
         if (invoked && mocksFound) return emptyList()
 
         invoked = true
@@ -44,25 +45,28 @@ internal class MockEngineProcessor(private val environment: SymbolProcessorEnvir
             .toList()
         val functionDataList = annotatedFunctions
             .mapNotNull { FunctionData(it, environment.logger) }
+        val sourceDependencies = annotatedFunctions
+            .mapNotNull { it.closestClassDeclaration()?.containingFile }
+            .toTypedArray()
 
         mocksFound = functionDataList.isNotEmpty()
         if (!mocksFound) {
-            Lumber.debug("[MockEngineProcessor] No mocks found")
+            environment.logger.warn("[MockEngineProcessor] No mocks found")
             resolver.getKotlinClassByName("$MOCK_ENGINE_PACKAGE.$MOCK_ENGINE_DATA_FILE_NAME")
                 ?.let {
-                    Lumber.debug("[MockEngineProcessor] Generated class found, not overwriting")
+                    environment.logger.warn("[MockEngineProcessor] Generated class found, not overwriting")
                     return emptyList()
                 }
         }
 
         environment.codeGenerator.createNewFile(
-            dependencies = Dependencies(false),
+            dependencies = Dependencies(true, *sourceDependencies),
             packageName = MOCK_ENGINE_PACKAGE,
             fileName = MOCK_ENGINE_DATA_FILE_NAME.removePrefix("")
         ).use { it.write(mockDataTemplate(mocks = functionDataList).toByteArray()) }
 
         return emptyList()
-    }.getOrDefault(emptyList())
+    }
 
     private fun mockDataTemplate(mocks: List<FunctionData>): String {
         val mockedDataEntries = mocks.joinToString(separator = "\n") { functionData ->

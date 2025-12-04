@@ -10,6 +10,6 @@ internal enum class HttpMethod {
 
     companion object {
         fun contains(value: String) =
-            HttpMethod.entries.any { it.name.lowercase() == value.lowercase() }
+            HttpMethod.entries.any { it.name.equals(value, ignoreCase = true) }
     }
 }

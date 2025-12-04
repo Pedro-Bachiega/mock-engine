@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.jetbrains.serialization)
     alias(libs.plugins.ktorfit)
+    alias(libs.plugins.mock.engine)
 }
 
 kotlin {
@@ -41,14 +42,10 @@ kotlin {
             implementation(libs.ktor.serialization)
             implementation(libs.ktorfit)
 
-            implementation(project(":annotation"))
-            implementation(project(":client"))
+            implementation(projects.annotation)
+            implementation(projects.client)
         }
     }
-}
-
-dependencies {
-    kspJvm(project(":processor"))
 }
 
 compose.desktop {

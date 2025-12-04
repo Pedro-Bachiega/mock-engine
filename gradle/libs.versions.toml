@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------------------------ #
 [versions]
 ## --- Plugins and more general stuff --- ##
-android-plugin = "8.13.0"
+android-plugin = "8.13.1"
 jacoco = "0.8.9"
 dexcount = "4.0.0"
 detekt = "1.23.8"
@@ -17,8 +17,8 @@ build-sdk-target = "36"
 build-tools = "35.0.0"
 
 ## JetBrains
-jetbrains-compose = "1.9.2"
-jetbrains-compose-lifecycle = "2.9.5"
+jetbrains-compose = "1.10.0-rc01"
+jetbrains-compose-lifecycle = "2.9.6"
 jetbrains-coroutines = "1.10.2"
 jetbrains-dokka = "2.1.0"
 jetbrains-kotlin = "2.2.21"
@@ -33,7 +33,7 @@ androidx-biometric = "1.2.0-alpha05"
 androidx-datastore = "1.1.7"
 
 ## AndroidX Compose
-androidx-compose-activity = "1.11.0"
+androidx-compose-activity = "1.12.1"
 androidx-compose-core = "1.9.0"
 
 ## Google
@@ -41,10 +41,10 @@ google-ksp = "2.3.0"
 
 ## Gradle
 gradle-publish = "1.3.1"
-vanniktech-publish = "0.34.0"
+vanniktech-publish = "0.35.0"
 
 ## Ktor
-ktor = "3.3.1"
+ktor = "3.3.3"
 ktorfit = "2.6.4"
 
 ## Toolkit
@@ -52,6 +52,7 @@ toolkit-arch = "2.0.0-rc06"
 
 ## Tools
 koin = "4.1.1"
+mock-engine = "0.0.1-alpha05"
 
 # ------------------------------------------------------------------------------------------------ #
 [libraries]
@@ -92,6 +93,8 @@ koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = 
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 lint-detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
+mock-engine-annotation = { group = "io.github.pedro-bachiega", name = "mock-engine-annotation", version.ref = "mock-engine" }
+mock-engine-client = { group = "io.github.pedro-bachiega", name = "mock-engine-client", version.ref = "mock-engine" }
 
 # --------------------------------------------- Plugin Libraries --------------------------------------------------- #
 ## JetBrains
@@ -137,6 +140,7 @@ ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 lint-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 lint-ktlint = { id = "org.jlleitschuh.gradle.ktlint-idea", version.ref = "ktlint" }
 quality-jacoco = { id = "jacoco" }
+mock-engine = { id = "io.github.pedro-bachiega.mock-engine-compiler", version.ref = "mock-engine" }
 vanniktech-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 
 # ------------------------------------------------------------------------------------------------ #
